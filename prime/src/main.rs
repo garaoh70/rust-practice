@@ -1,18 +1,25 @@
+mod domain;
+use crate::domain::prime::PrimeV2;
+
 fn main() {
-    let mut sieve = PrimeSieveV1::new();
+    let mut sieve = PrimeV2::new();
 
-    sieve.run();
+    sieve.run(50);
 
-    for prime in sieve.primes {
+    let elapsed = sieve.elapsed();
+    for prime in sieve.values() {
         println!("{}", prime);
     }
+    println!("Elapsed: {} msec", elapsed);
 }
 
+#[allow(dead_code)]
 struct PrimeSieveV1 {
     sieve: Vec<bool>,
     primes: Vec<usize>,
 }
 
+#[allow(dead_code)]
 impl PrimeSieveV1 {
     pub fn new() -> Self {
         PrimeSieveV1 {
@@ -35,7 +42,7 @@ impl PrimeSieveV1 {
             .map(|x| x + index)
     }
 
-    fn run(&mut self) {
+    pub fn run(&mut self) {
         let mut current = Some(2usize);
 
         while let Some(x) = current {
