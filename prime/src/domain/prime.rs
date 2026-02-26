@@ -3,6 +3,7 @@ use stopwatch::Stopwatch;
 
 pub trait PrimeGenerator {
     fn run(&mut self);
+    #[allow(dead_code)]
     fn values(&self) -> &[usize];
     fn elapsed(&self) -> i64;
 }
