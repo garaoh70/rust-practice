@@ -1,31 +1,11 @@
-pub struct SieveV2 {
-    sieves: Vec<bool>,
+#[allow(dead_code)]
+pub trait SieveGenerator {
+    fn mark_multiples(&mut self, step: usize);
+    fn next_unmarked(&mut self, index: usize) -> Option<usize>;
 }
 
-impl SieveV2 {
-    pub fn new(size: usize) -> Self {
-        SieveV2 {
-            sieves: vec![false; size],
-        }
-    }
+pub mod v2;
+pub mod v3;
 
-    pub fn mark(&mut self, index: usize) {
-        if self.sieves.len() <= index {
-            return;
-        }
-
-        self.sieves[index] = true;
-    }
-
-    pub fn next_unmarked(&mut self, index: usize) -> Option<usize> {
-        if self.sieves.len() <= index {
-            return None;
-        }
-
-        self.sieves
-            .iter()
-            .skip(index)
-            .position(|&x| x == false)
-            .map(|x| x + index)
-    }
-}
+pub use v2::SieveV2;
+pub use v3::SieveV3;
