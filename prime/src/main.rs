@@ -1,14 +1,16 @@
 mod domain;
+use crate::domain::prime::{PrimeGenerator, Prime};
 #[allow(unused_imports)]
-use crate::domain::prime::{PrimeGenerator, PrimeV1, PrimeV2, PrimeV3};
+use crate::domain::sieve::{SieveV1, SieveV2, SieveV3};
 
 fn main() {
-    let mut sieve = PrimeV3::new();
+    let sieve = SieveV3::new(50usize);
+    let mut calculator = Prime::new(sieve);
 
-    sieve.run(50usize);
+    calculator.run();
 
-    let elapsed = sieve.elapsed();
-    for prime in sieve.values() {
+    let elapsed = calculator.elapsed();
+    for prime in calculator.values() {
         println!("{}", prime);
     }
     println!("Elapsed: {} msec", elapsed);

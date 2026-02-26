@@ -1,53 +1,46 @@
 use super::SieveGenerator;
 
 #[allow(dead_code)]
-pub struct SieveV2 {
+pub struct SieveV1 {
     sieves: Vec<bool>,
 }
 
 #[allow(dead_code)]
-impl SieveV2 {
+impl SieveV1 {
     pub fn new(size: usize) -> Self {
-        SieveV2 {
+        SieveV1 {
             sieves: vec![false; size + 1],
         }
     }
 }
 
-impl SieveGenerator for SieveV2 {
+impl SieveGenerator for SieveV1 {
     fn mark_multiples(&mut self, step: usize) {
-        let length = self.sieves.len();
-        if step <= length / step {
-            (step * step..length)
-                .step_by(step)
-                .for_each(|x| self.sieves[x] = true);
-        }
+        let len = self.sieves.len();
+
+        (step..len)
+            .step_by(step)
+            .for_each(|x| self.sieves[x] = true);
     }
 
     fn next_unmarked(&mut self, index: usize) -> Option<usize> {
-        let next = index + 1;
-
-        if self.sieves.len() <= next {
-            return None;
-        }
-
         self.sieves
             .iter()
-            .skip(next)
+            .skip(index)
             .position(|&x| x == false)
-            .map(|x| x + next)
+            .map(|x| x + index)
     }
 }
 
 #[cfg(test)]
-mod test_v2 {
+mod test_v1 {
     use super::*;
     use crate::{Prime, PrimeGenerator};
 
     #[test]
     fn test_prime_numbers_less_than_50() {
         // Arrange
-        let sieve = SieveV2::new(50usize);
+        let sieve = SieveV1::new(50usize);
         let mut prime = Prime::new(sieve);
         let expected = vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
 

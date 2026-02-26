@@ -56,3 +56,42 @@ impl SieveGenerator for SieveV3 {
         }
     }
 }
+
+#[cfg(test)]
+mod test_v3 {
+    use super::*;
+    use crate::{Prime, PrimeGenerator};
+
+    #[test]
+    fn test_prime_numbers_less_than_50() {
+        // Arrange
+        let sieve = SieveV3::new(50usize);
+        let mut prime = Prime::new(sieve);
+        let expected = vec![2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
+
+        // Arrange
+        prime.run();
+        let actual = prime.values();
+
+        // Assert
+        assert_eq!(actual, expected, "50未満の素数は一致しません");
+    }
+
+    #[test]
+    fn test_prime_numbers_less_than_100() {
+        // Arrange
+        let sieve = SieveV3::new(100usize);
+        let mut prime = Prime::new(sieve);
+        let expected = vec![
+            2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83,
+            89, 97,
+        ];
+
+        // Arrange
+        prime.run();
+        let actual = prime.values();
+
+        // Assert
+        assert_eq!(actual, expected, "100未満の素数は一致しません");
+    }
+}
