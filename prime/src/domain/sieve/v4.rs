@@ -2,7 +2,7 @@ use super::SieveGenerator;
 
 #[allow(dead_code)]
 pub struct SieveV4 {
-    sieves: Vec<u128>,
+    flags: Vec<u128>,
     max: usize,
 }
 
@@ -10,7 +10,7 @@ pub struct SieveV4 {
 impl SieveV4 {
     pub fn new(size: usize) -> Self {
         SieveV4 {
-            sieves: vec![0u128; size / 128 + 1],
+            flags: vec![0u128; size / 128 + 1],
             max: size,
         }
     }
@@ -19,7 +19,7 @@ impl SieveV4 {
 impl SieveGenerator for SieveV4 {
     fn mark_multiples(&mut self, step: usize) {
         // 偶数は篩にかけない
-        if (step % 2) == 0 {
+        if (step & 1) == 0 {
             return;
         }
 
@@ -33,11 +33,11 @@ impl SieveGenerator for SieveV4 {
             let offset = value / 128;
             let mask = 1u128 << (value % 128);
 
-            self.sieves[offset] |= mask;
+            self.flags[offset] |= mask;
         }
     }
 
-    fn next_unmarked(&mut self, index: usize) -> Option<usize> {
+    fn next_unmarked(&self, index: usize) -> Option<usize> {
         // ２の場合は３を返す
         if index <= 2 {
             return Some(3);
@@ -49,7 +49,7 @@ impl SieveGenerator for SieveV4 {
         let next = (index + 2..=self.max)
             .step_by(2)
             .map(|x| x >> 1)
-            .find(|&x| self.sieves[x / 128] & (1u128 << (x % 128)) == 0);
+            .find(|&x| self.flags[x / 128] & (1u128 << (x % 128)) == 0);
         match next {
             Some(v) => Some(v * 2 + 1),
             None => None,

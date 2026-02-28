@@ -1,11 +1,10 @@
 use crate::domain::sieve::SieveGenerator;
-use stopwatch::Stopwatch;
 
 pub trait PrimeGenerator {
     fn run(&mut self);
     #[allow(dead_code)]
     fn values(&self) -> &[usize];
-    fn elapsed(&self) -> i64;
+    fn elapsed(&self) -> u128;
 }
 
 #[allow(dead_code)]
@@ -13,7 +12,7 @@ pub struct Prime<S: SieveGenerator> {
     sieve: S,
     primes: Vec<usize>,
     is_completed: bool,
-    elapsed: i64,
+    elapsed: u128,
 }
 
 #[allow(dead_code)]
@@ -23,7 +22,7 @@ impl<S: SieveGenerator> Prime<S> {
             sieve: sieve,
             primes: vec![],
             is_completed: false,
-            elapsed: 0i64,
+            elapsed: 0u128,
         }
     }
 }
@@ -34,19 +33,19 @@ impl<S: SieveGenerator> PrimeGenerator for Prime<S> {
             return;
         }
 
-        let mut current = Some(2usize);
+        let mut current = 2usize;
 
-        let mut sw = Stopwatch::new();
-        sw.start();
-
-        while let Some(x) = current {
-            self.primes.push(x);
-            self.sieve.mark_multiples(x);
-            current = self.sieve.next_unmarked(x);
+        let start = std::time::Instant::now();
+        loop {
+            self.primes.push(current);
+            self.sieve.mark_multiples(current);
+            match self.sieve.next_unmarked(current) {
+                Some(next) => current = next,
+                _ => break,
+            }
         }
+        self.elapsed = start.elapsed().as_millis();
 
-        sw.stop();
-        self.elapsed = sw.elapsed_ms();
         self.is_completed = true;
     }
 
@@ -54,7 +53,7 @@ impl<S: SieveGenerator> PrimeGenerator for Prime<S> {
         &self.primes
     }
 
-    fn elapsed(&self) -> i64 {
+    fn elapsed(&self) -> u128 {
         self.elapsed
     }
 }

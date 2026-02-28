@@ -2,29 +2,29 @@ use super::SieveGenerator;
 
 #[allow(dead_code)]
 pub struct SieveV1 {
-    sieves: Vec<bool>,
+    flags: Vec<bool>,
 }
 
 #[allow(dead_code)]
 impl SieveV1 {
     pub fn new(size: usize) -> Self {
         SieveV1 {
-            sieves: vec![false; size + 1],
+            flags: vec![false; size + 1],
         }
     }
 }
 
 impl SieveGenerator for SieveV1 {
     fn mark_multiples(&mut self, step: usize) {
-        let len = self.sieves.len();
+        let len = self.flags.len();
 
         (step..len)
             .step_by(step)
-            .for_each(|x| self.sieves[x] = true);
+            .for_each(|x| self.flags[x] = true);
     }
 
-    fn next_unmarked(&mut self, index: usize) -> Option<usize> {
-        self.sieves
+    fn next_unmarked(&self, index: usize) -> Option<usize> {
+        self.flags
             .iter()
             .skip(index)
             .position(|&x| x == false)

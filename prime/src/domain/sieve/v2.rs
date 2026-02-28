@@ -2,36 +2,36 @@ use super::SieveGenerator;
 
 #[allow(dead_code)]
 pub struct SieveV2 {
-    sieves: Vec<bool>,
+    flags: Vec<bool>,
 }
 
 #[allow(dead_code)]
 impl SieveV2 {
     pub fn new(size: usize) -> Self {
         SieveV2 {
-            sieves: vec![false; size + 1],
+            flags: vec![false; size + 1],
         }
     }
 }
 
 impl SieveGenerator for SieveV2 {
     fn mark_multiples(&mut self, step: usize) {
-        let length = self.sieves.len();
-        if step <= length / step {
-            (step * step..length)
+        let len = self.flags.len();
+        if step <= len / step {
+            (step * step..len)
                 .step_by(step)
-                .for_each(|x| self.sieves[x] = true);
+                .for_each(|x| self.flags[x] = true);
         }
     }
 
-    fn next_unmarked(&mut self, index: usize) -> Option<usize> {
+    fn next_unmarked(&self, index: usize) -> Option<usize> {
         let next = index + 1;
 
-        if self.sieves.len() <= next {
+        if self.flags.len() <= next {
             return None;
         }
 
-        self.sieves
+        self.flags
             .iter()
             .skip(next)
             .position(|&x| x == false)
