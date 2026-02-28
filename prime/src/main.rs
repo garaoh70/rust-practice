@@ -1,7 +1,7 @@
 mod domain;
 use crate::domain::prime::{Prime, PrimeGenerator};
 #[allow(unused_imports)]
-use crate::domain::sieve::{SieveV1, SieveV2, SieveV3};
+use crate::domain::sieve::{SieveV1, SieveV2, SieveV3, SieveV4};
 
 fn main() {
     let limit = 50usize;
