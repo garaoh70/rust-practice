@@ -1,12 +1,10 @@
 use super::SieveGenerator;
 
-#[allow(dead_code)]
 pub struct SieveV4 {
     flags: Vec<u128>,
     max: usize,
 }
 
-#[allow(dead_code)]
 impl SieveV4 {
     pub fn new(size: usize) -> Self {
         SieveV4 {
@@ -55,6 +53,10 @@ impl SieveGenerator for SieveV4 {
             None => None,
         }
     }
+
+    fn name(&self) -> &'static str {
+        "SieveV4"
+    }
 }
 
 #[cfg(test)]
@@ -65,7 +67,7 @@ mod test_v4 {
     #[test]
     fn test_prime_numbers_less_than_1000() {
         // Arrange
-        let sieve = SieveV4::new(1000usize);
+        let sieve = Box::new(SieveV4::new(1000usize));
         let mut prime = Prime::new(sieve);
         let expected = vec![
             2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83,

@@ -1,13 +1,22 @@
+mod cli;
 mod domain;
+
 use crate::domain::prime::{Prime, PrimeGenerator};
-#[allow(unused_imports)]
-use crate::domain::sieve::{SieveV1, SieveV2, SieveV3, SieveV4};
+use crate::domain::sieve::{SieveGenerator, SieveV1, SieveV2, SieveV3, SieveV4};
+use clap::Parser;
+use cli::Arguments;
 
 fn main() {
-    let limit = 50usize;
+    let args = Arguments::parse();
 
-    let sieve = SieveV3::new(limit);
-    let impl_name = type_of(&sieve).rsplit("::").next().unwrap();
+    let limit = args.count;
+    let sieve: Box<dyn SieveGenerator> = match args.sieve {
+        1 => Box::new(SieveV1::new(limit)),
+        2 => Box::new(SieveV2::new(limit)),
+        4 => Box::new(SieveV4::new(limit)),
+        _ => Box::new(SieveV3::new(limit)),
+    };
+    let impl_name = sieve.name();
 
     let mut calculator = Prime::new(sieve);
     calculator.run();
@@ -34,9 +43,4 @@ fn main() {
     println!("elapsed    = {:.3}s", (elapsed_msec as f64) / 1000f64);
     println!("throughput = {} n/s", throughput);
     println!("--------------------------------");
-}
-
-#[allow(dead_code)]
-fn type_of<T>(_: &T) -> &'static str {
-    std::any::type_name::<T>()
 }

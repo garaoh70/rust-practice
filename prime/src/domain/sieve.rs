@@ -1,6 +1,7 @@
 pub trait SieveGenerator {
     fn mark_multiples(&mut self, step: usize);
     fn next_unmarked(&self, index: usize) -> Option<usize>;
+    fn name(&self) -> &'static str;
 }
 
 pub mod v1;

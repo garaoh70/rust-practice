@@ -2,22 +2,19 @@ use crate::domain::sieve::SieveGenerator;
 
 pub trait PrimeGenerator {
     fn run(&mut self);
-    #[allow(dead_code)]
     fn values(&self) -> &[usize];
     fn elapsed(&self) -> u128;
 }
 
-#[allow(dead_code)]
-pub struct Prime<S: SieveGenerator> {
-    sieve: S,
+pub struct Prime {
+    sieve: Box<dyn SieveGenerator>,
     primes: Vec<usize>,
     is_completed: bool,
     elapsed: u128,
 }
 
-#[allow(dead_code)]
-impl<S: SieveGenerator> Prime<S> {
-    pub fn new(sieve: S) -> Self {
+impl Prime {
+    pub fn new(sieve: Box<dyn SieveGenerator>) -> Self {
         Prime {
             sieve: sieve,
             primes: vec![],
@@ -27,7 +24,7 @@ impl<S: SieveGenerator> Prime<S> {
     }
 }
 
-impl<S: SieveGenerator> PrimeGenerator for Prime<S> {
+impl PrimeGenerator for Prime {
     fn run(&mut self) {
         if self.is_completed {
             return;
