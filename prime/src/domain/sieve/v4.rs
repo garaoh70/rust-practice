@@ -83,8 +83,8 @@ mod test_v4 {
         ];
 
         // Arrange
-        prime.run();
-        let actual = prime.values();
+        let result = prime.run();
+        let actual = result.primes;
 
         // Assert
         assert_eq!(actual, expected, "1000未満の素数は一致しません");
