@@ -32,6 +32,10 @@ pub struct Arguments {
     /// Show result
     #[arg(long, default_value_t = false)]
     pub show: bool,
+
+    /// Available async
+    #[arg(short = 'a', long = "async", default_value_t = false)]
+    pub is_async: bool,
 }
 
 fn parse_maximum_number(input: &str) -> Result<usize, String> {
