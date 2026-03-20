@@ -10,5 +10,7 @@ dual_sync = []
 rstest = "0.26.1"
 
 [dependencies]
+async-trait = "0.1.89"
 clap = { version = "4.5.60", features = ["derive"] }
+sea-orm = { version = "1.1.19", features = ["runtime-tokio-rustls", "sqlx-sqlite", "macros"] }
 tokio = { version = "1.50.0", features = ["full"] }

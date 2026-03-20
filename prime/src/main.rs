@@ -1,19 +1,37 @@
 mod cli;
 mod domain;
+mod entity;
+mod repository;
 
-use crate::domain::prime::{Prime, PrimeGenerator};
-use crate::domain::sieve::{SieveGenerator, SieveV1, SieveV2, SieveV3, SieveV4};
+use self::domain::prime::{Prime, PrimeGenerator, PrimeResult};
+use self::domain::sieve::{SieveGenerator, SieveV1, SieveV2, SieveV3, SieveV4};
+use self::repository::{RepositoryGenerator, SQLite};
+
 use clap::Parser;
 use cli::Arguments;
 
 #[tokio::main]
 async fn main() {
+    // 引数パース
     let args = Arguments::parse();
+
+    // 素数計算
+    let result = calculate(&args).await;
+
+    // 結果表示
+    display_result(&args, &result);
+
+    // 結果記録
+    record_result(&args, &result).await;
+}
+
+async fn calculate(args: &Arguments) -> PrimeResult {
     let limit = args.number;
 
-    let result = if cfg!(feature = "dual_sync") && args.is_async {
+    if cfg!(feature = "dual_sync") && args.is_async {
+        let sieve_version = args.sieve;
         let task = tokio::task::spawn_blocking(move || {
-            let sieve: Box<dyn SieveGenerator> = match args.sieve {
+            let sieve: Box<dyn SieveGenerator> = match sieve_version {
                 1 => Box::new(SieveV1::new(limit)),
                 2 => Box::new(SieveV2::new(limit)),
                 4 => Box::new(SieveV4::new(limit)),
@@ -32,9 +50,12 @@ async fn main() {
         };
         let mut calculator = Prime::new(sieve);
         calculator.run()
-    };
+    }
+}
 
+fn display_result(args: &Arguments, result: &PrimeResult) {
     let impl_name = result.sieve_name;
+    let limit = args.number;
     let prime_length = result.primes.len();
     let max_prime = result.primes.last().copied().unwrap_or(0usize);
     let min_prime = result.primes.first().copied().unwrap_or(0usize);
@@ -60,4 +81,10 @@ async fn main() {
     } else {
         println!("elapsed    = {:.3}s", (elapsed_msec as f64) / 1000f64);
     }
+}
+
+async fn record_result(args: &Arguments, result: &PrimeResult)
+{
+    let repository : Box<dyn RepositoryGenerator> = Box::new(SQLite::new());
+    repository.append(&args, &result).await;
 }

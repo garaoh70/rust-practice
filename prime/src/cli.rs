@@ -36,6 +36,10 @@ pub struct Arguments {
     /// Available async
     #[arg(short = 'a', long = "async", default_value_t = false)]
     pub is_async: bool,
+
+    /// Database
+    #[arg(short, long)]
+    pub database: Option<String>,
 }
 
 fn parse_maximum_number(input: &str) -> Result<usize, String> {
