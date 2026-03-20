@@ -11,7 +11,19 @@ async fn main() {
     let args = Arguments::parse();
     let limit = args.number;
 
-    let task = tokio::task::spawn_blocking(move || {
+    let result = if cfg!(feature = "dual_sync") && args.is_async {
+        let task = tokio::task::spawn_blocking(move || {
+            let sieve: Box<dyn SieveGenerator> = match args.sieve {
+                1 => Box::new(SieveV1::new(limit)),
+                2 => Box::new(SieveV2::new(limit)),
+                4 => Box::new(SieveV4::new(limit)),
+                _ => Box::new(SieveV3::new(limit)),
+            };
+            let mut calculator = Prime::new(sieve);
+            calculator.run()
+        });
+        task.await.unwrap()
+    } else {
         let sieve: Box<dyn SieveGenerator> = match args.sieve {
             1 => Box::new(SieveV1::new(limit)),
             2 => Box::new(SieveV2::new(limit)),
@@ -20,8 +32,7 @@ async fn main() {
         };
         let mut calculator = Prime::new(sieve);
         calculator.run()
-    });
-    let result = task.await.unwrap();
+    };
 
     let impl_name = result.sieve_name;
     let prime_length = result.primes.len();
