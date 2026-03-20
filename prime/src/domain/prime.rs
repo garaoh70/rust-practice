@@ -16,9 +16,7 @@ pub struct PrimeResult {
 
 impl Prime {
     pub fn new(sieve: Box<dyn SieveGenerator>) -> Self {
-        Prime {
-            sieve: sieve,
-        }
+        Prime { sieve: sieve }
     }
 }
 
@@ -38,6 +36,10 @@ impl PrimeGenerator for Prime {
         }
         let elapsed = start.elapsed().as_millis();
 
-        PrimeResult { primes: (primes), elapsed: (elapsed as usize), sieve_name: (self.sieve.name()) }
+        PrimeResult {
+            primes: (primes),
+            elapsed: (elapsed as usize),
+            sieve_name: (self.sieve.name()),
+        }
     }
 }
