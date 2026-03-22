@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>素数表示</title>
+</head>
+
+<body>
+    <style>
+        .box {
+            border: 1px solid #000;
+            padding: 10px;
+            width: 400px;
+            height: 250px;
+            overflow-y: scroll;
+            font-family: monospace;
+            background: #fff;
+        }
+    </style>
+
+    <h1>素数表示</h1>
+
+    <p>開始と終了を入力してください。</p>
+
+    <form method="post" action="/generate">
+        <p>
+            開始: <input type="number" id="start" name="start" value="{% if start > 0 %}{{ start }}{% endif %}">
+        </p>
+        <p>
+            終了: <input type="number" id="end" name="end" value="{% if end > 0 %}{{ end }}{% endif %}">
+        </p>
+        <p>
+            <input type="submit" id="submit" disabled value="開始">
+        </p>
+    </form>
+
+    <hr>
+
+    <p>
+        <button onclick="copyText()">結果をコピー</button>
+    </p>
+
+    <div class="box">
+        <pre id="result">
+{% for p in primes %}{{ p }}
+{% endfor %}
+        </pre>
+    </div>
+
+    <script>
+        function copyText() {
+            const text = document.getElementById("result").innerText;
+            navigator.clipboard.writeText(text)
+                .then(() => alert("コピーしました"))
+                .catch(() => alert("失敗しました"));
+        }
+
+        const start = document.getElementById("start");
+        const end = document.getElementById("end");
+        const button = document.getElementById("submit");
+
+        function toggleButton() {
+            if (start.value !== "" && end.value !== "") {
+                button.disabled = false;
+            } else {
+                button.disabled = true;
+            }
+        }
+
+        start.addEventListener("input", toggleButton);
+        end.addEventListener("input", toggleButton);
+    </script>
+</body>
+
+</html>
