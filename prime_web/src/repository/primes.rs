@@ -1,29 +1,28 @@
-use crate::repository::RepositoryGenerator;
-
 use rusqlite::{Connection, Error};
 
-pub struct Primes {
-    path: &'static str,
-}
+use crate::repository::RepositoryGenerator;
 
-impl Primes {
-    pub fn new(path: &'static str) -> Self {
-        Primes { path: path }
-    }
-}
+pub struct Primes;
 
 impl RepositoryGenerator for Primes {
-    fn extract_prime(&self, start: i64, end: i64) -> Result<Vec<i64>, Error> {
-        // データベース接続
-        let db = Connection::open(self.path)?;
-
-        let mut stmt = db.prepare("SELECT value FROM primes WHERE value > ?1 AND value < ?2")?;
+    fn extract_prime(
+        &self,
+        connection: &Connection,
+        start: i64,
+        end: i64,
+    ) -> Result<Vec<i64>, Error> {
+        let mut stmt =
+            connection.prepare("SELECT value FROM primes WHERE value >= ?1 AND value <= ?2")?;
 
         let rows = stmt.query_map([start, end], |row| {
             let value: i64 = row.get(0)?;
             Ok(value)
         })?;
 
-        Ok(rows.flatten().collect())
+        let mut result = Vec::new();
+        for row in rows {
+            result.push(row?);
+        }
+        Ok(result)
     }
 }

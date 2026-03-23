@@ -1,10 +1,15 @@
 use actix_web::{App, HttpResponse, HttpServer, error, get, post, web};
-
 use askama::Template;
+use clap::Parser;
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
 use serde::Deserialize;
+
+type SqlitePool = Pool<SqliteConnectionManager>;
 
 use crate::repository::RepositoryGenerator;
 
+pub mod cli;
 pub mod repository;
 
 #[derive(Template)]
@@ -34,17 +39,29 @@ async fn index() -> Result<HttpResponse, actix_web::Error> {
 }
 
 #[post("/generate")]
-async fn generate(form: web::Form<PrimeForm>) -> Result<HttpResponse, actix_web::Error> {
+async fn generate(
+    pool: web::Data<SqlitePool>,
+    form: web::Form<PrimeForm>,
+) -> Result<HttpResponse, actix_web::Error> {
     let start = form.start.max(1);
     let end = form.end.max(1);
 
-    let prime_genarator = repository::Primes::new("primes.db");
+    if start > end || end - start > 10000000 {
+        return Err(error::ErrorBadRequest("invalid range"));
+    }
 
-    let primes = match prime_genarator.extract_prime(start, end)
-    {
-        Ok(x) => x,
-        _ => return Err(error::ErrorInternalServerError("something went wrong")),
-    };
+    let prime_genarator = repository::Primes;
+    let pool = pool.clone();
+
+    let primes = web::block(move || {
+        let connection = pool
+            .get()
+            .map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))?;
+        prime_genarator.extract_prime(&connection, start, end)
+    })
+    .await
+    .map_err(|_| error::ErrorInternalServerError("blocking error"))?
+    .map_err(|_| error::ErrorInternalServerError("db error"))?;
 
     let response_body = IndexTemplate {
         primes: &primes,
@@ -52,15 +69,30 @@ async fn generate(form: web::Form<PrimeForm>) -> Result<HttpResponse, actix_web:
         end: end,
     };
 
-    Ok(HttpResponse::Ok().body(response_body.render().unwrap()))
+    let body = response_body
+        .render()
+        .map_err(|_| error::ErrorInternalServerError("template error"))?;
+
+    Ok(HttpResponse::Ok().body(body))
 }
 
 #[actix_web::main]
 async fn main() -> Result<(), actix_web::Error> {
-    HttpServer::new(move || App::new().service(index).service(generate))
-        .bind("0.0.0.0:8080")?
-        .run()
-        .await?;
+    let args = cli::Arguments::parse();
+
+    let manager = SqliteConnectionManager::file(args.database);
+    let pool = Pool::new(manager)
+        .map_err(|_| error::ErrorInternalServerError("Database Connection Error"))?;
+
+    HttpServer::new(move || {
+        App::new()
+            .app_data(web::Data::new(pool.clone()))
+            .service(index)
+            .service(generate)
+    })
+    .bind(args.bind)?
+    .run()
+    .await?;
 
     Ok(())
 }
