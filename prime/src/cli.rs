@@ -40,6 +40,10 @@ pub struct Arguments {
     /// Database
     #[arg(short, long)]
     pub database: Option<String>,
+
+    /// Binary file
+    #[arg(short, long)]
+    pub binary_file: Option<String>,
 }
 
 fn parse_maximum_number(input: &str) -> Result<usize, String> {

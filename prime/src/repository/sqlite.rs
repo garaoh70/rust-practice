@@ -1,10 +1,12 @@
+use std::vec;
+
 use super::RepositoryGenerator;
 use crate::cli::Arguments;
 use crate::domain::prime::PrimeResult;
 use crate::entity;
 
 use async_trait::async_trait;
-use sea_orm::{ActiveModelTrait, ConnectionTrait, TransactionTrait};
+use sea_orm::{ActiveModelTrait, ConnectionTrait, EntityTrait, QuerySelect, TransactionTrait};
 
 pub struct SQLite {}
 
@@ -83,7 +85,35 @@ impl RepositoryGenerator for SQLite {
     }
 
     #[allow(unused_variables)]
-    async fn extract(&self, start: usize, length: usize) -> Vec<usize> {
-        vec![]
+    async fn extract(&self, args: &Arguments) -> Vec<usize> {
+        // データベースオプションがなければ終了
+        let Some(path) = args.database.clone() else {
+            return vec![];
+        };
+
+        // データベース接続
+        let db = sea_orm::Database::connect(format!("sqlite:{}?mode=rwc", path))
+            .await
+            .expect("データベース接続に失敗しました");
+
+        // トランザクション開始
+        let txn = db
+            .begin()
+            .await
+            .expect("トランザクション開始に失敗しました");
+
+        // 素数の抽出
+        let primes: Vec<i64> = entity::primes::Entity::find()
+            .select_only()
+            .column(entity::primes::Column::Value)
+            .into_tuple()
+            .all(&txn)
+            .await
+            .expect("素数の抽出に失敗しました");
+
+        // データベース切断
+        txn.rollback().await.unwrap();
+
+        primes.into_iter().map(|x| x as usize).collect()
     }
 }

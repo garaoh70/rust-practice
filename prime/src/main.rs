@@ -5,7 +5,7 @@ mod repository;
 
 use self::domain::prime::{Prime, PrimeGenerator, PrimeResult};
 use self::domain::sieve::{SieveGenerator, SieveV1, SieveV2, SieveV3, SieveV4};
-use self::repository::{RepositoryGenerator, SQLite};
+use self::repository::*;
 
 use clap::Parser;
 use cli::Arguments;
@@ -83,8 +83,9 @@ fn display_result(args: &Arguments, result: &PrimeResult) {
     }
 }
 
-async fn record_result(args: &Arguments, result: &PrimeResult)
-{
-    let repository : Box<dyn RepositoryGenerator> = Box::new(SQLite::new());
+async fn record_result(args: &Arguments, result: &PrimeResult) {
+    let repository: Box<dyn RepositoryGenerator> = Box::new(SQLite::new());
+    repository.append(&args, &result).await;
+    let repository: Box<dyn RepositoryGenerator> = Box::new(BinaryU64::new());
     repository.append(&args, &result).await;
 }
