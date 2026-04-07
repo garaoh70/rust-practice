@@ -10,6 +10,9 @@ wit-bindgen-rt = { version = "0.44.0", features = ["bitflags"] }
 crate-type = ["cdylib"]
 
 [package.metadata.component]
-package = "component:greet"
+package = "garaoh70:greet-impl"
+
+[package.metadata.component.target]
+world = "greetable-provider"
 
 [package.metadata.component.dependencies]
